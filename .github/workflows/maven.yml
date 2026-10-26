@@ -20,16 +20,68 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    # Updated: Changed 'package' to 'clean test package' so JaCoCo generates reports
+    # Step 1: Restore the previous build's coverage score if it exists
+    - name: Restore Previous Coverage Score
+      id: cache-coverage
+      uses: actions/cache/restore@v4
+      with:
+        path: .coverage_history
+        key: coverage-${{ github.run_id }}
+        restore-keys: |
+          coverage-
+
     - name: Build and Test with Maven
       run: mvn -B clean test package --file pom.xml
 
-    # New Step: Parses the generated JaCoCo report and prints the score to the screen
-    - name: Log JaCoCo Code Coverage Score
+    # Step 2: Compare scores and publish an elegant table to the Summary Page
+    - name: Compare and Publish Coverage Table
+      if: always()
       run: |
-        echo "=== JACOCO COVERAGE SUMMARY ==="
         if [ -f target/site/jacoco/jacoco.csv ]; then
-          cat target/site/jacoco/jacoco.csv | awk -F, 'NR>1 {instructions_missed+=$4; instructions_covered+=$5} END {if (instructions_missed+instructions_covered > 0) print "Total Line/Instruction Coverage: " (instructions_covered/(instructions_missed+instructions_covered))*100 "%"; else print "No instructions found to calculate coverage.";}'
+          # Calculate current score
+          CURRENT_SCORE=$(cat target/site/jacoco/jacoco.csv | awk -F, 'NR>1 {inst_m+=$4; inst_c+=$5} END {if (inst_m+inst_c > 0) printf "%.2f", (inst_c/(inst_m+inst_c))*100; else print "0";}')
+          
+          # Read previous score from cache if it exists, otherwise default to "N/A"
+          PREV_SCORE="N/A"
+          if [ -f .coverage_history/last_score.txt ]; then
+            PREV_SCORE=$(cat .coverage_history/last_score.txt)
+          fi
+
+          # Calculate the trend/difference
+          if [ "$PREV_SCORE" != "N/A" ]; then
+            DIFF=$(echo "$CURRENT_SCORE - $PREV_SCORE" | bc 2>/dev/null || awk "BEGIN {print $CURRENT_SCORE - $PREV_SCORE}")
+            # Format the display trend sign
+            if (( $(echo "$DIFF > 0" | bc -l 2>/dev/null || awk "BEGIN {print ($DIFF > 0)?1:0}") )); then
+              TREND="🟢 +$DIFF%"
+            elif (( $(echo "$DIFF < 0" | bc -l 2>/dev/null || awk "BEGIN {print ($DIFF < 0)?1:0}") )); then
+              TREND="🔴 $DIFF%"
+            else
+              TREND="⚪ No Change"
+            fi
+          else
+            TREND="🆕 First Tracked Run"
+          fi
+
+          # Generate the Markdown Table on the Summary Dashboard
+          echo "### 📊 JaCoCo Code Coverage Comparison" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Phase | Coverage Score |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Previous Run | \`$PREV_SCORE%\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Current Run** | **$CURRENT_SCORE%** |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Trend Status** | $TREND |" >> $GITHUB_STEP_SUMMARY
+
+          # Save current score locally so it can be cached for the next pipeline run
+          mkdir -p .coverage_history
+          echo "$CURRENT_SCORE" > .coverage_history/last_score.txt
         else
-          echo "Error: JaCoCo report not found. Make sure jacoco-maven-plugin is configured in your pom.xml!"
+          echo "### ⚠️ Error: JaCoCo CSV data report asset not found." >> $GITHUB_STEP_SUMMARY
         fi
+
+    # Step 3: Save the current score to the GitHub storage cluster for the next run
+    - name: Save Current Coverage Score to Cache
+      if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: .coverage_history
+        key: coverage-${{ github.run_id }}
