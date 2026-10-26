@@ -20,5 +20,16 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+    # Updated: Changed 'package' to 'clean test package' so JaCoCo generates reports
+    - name: Build and Test with Maven
+      run: mvn -B clean test package --file pom.xml
+
+    # New Step: Parses the generated JaCoCo report and prints the score to the screen
+    - name: Log JaCoCo Code Coverage Score
+      run: |
+        echo "=== JACOCO COVERAGE SUMMARY ==="
+        if [ -f target/site/jacoco/jacoco.csv ]; then
+          cat target/site/jacoco/jacoco.csv | awk -F, 'NR>1 {instructions_missed+=$4; instructions_covered+=$5} END {if (instructions_missed+instructions_covered > 0) print "Total Line/Instruction Coverage: " (instructions_covered/(instructions_missed+instructions_covered))*100 "%"; else print "No instructions found to calculate coverage.";}'
+        else
+          echo "Error: JaCoCo report not found. Make sure jacoco-maven-plugin is configured in your pom.xml!"
+        fi
