@@ -1,15 +1,27 @@
-name: Java CI with Maven
+name: Java CI/CD Enterprise Pipeline
 
 on:
   push:
     branches: [ "master", "main" ]
   pull_request:
     branches: [ "master", "main" ]
+  
+  # Adds the native dropdown selection menu inside the GitHub Actions UI portal
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select Target Deployment Environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
       with:
@@ -22,6 +34,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
+    # Step 1: Restore the previous build's coverage score if it exists
     - name: Restore Previous Coverage Score
       id: cache-coverage
       uses: actions/cache/restore@v4
@@ -31,10 +44,16 @@ jobs:
         restore-keys: |
           coverage-
 
-    - name: Build and Test with Maven
-      run: mvn -B clean test package verify --file pom.xml
+    # Step 2: Build and Test with Active Profile
+    # Maps the dropdown choice value to Spring Boot's profile variable during maven test phases
+    # Default fallback to 'dev' profile if triggered automatically via code push instead of dropdown
+    - name: Build and Test with Active Profile
+      run: |
+        SELECTED_ENV="${{ github.event.inputs.environment }}"
+        TARGET_PROFILE=${SELECTED_ENV:-dev}
+        echo "Executing verification flow against target profile: $TARGET_PROFILE"
+        mvn -B clean test package verify -Dspring.profiles.active=$TARGET_PROFILE --file pom.xml
 
-    # Snyk step is safe to leave as-is
     - name: Run Snyk Security Scan
       continue-on-error: true
       uses: snyk/actions/maven@master
@@ -43,7 +62,6 @@ jobs:
       with:
         args: --severity-threshold=high
 
-    # SonarQube step will now work perfectly using Java 21
     - name: SonarQube Static Analysis
       continue-on-error: true
       env:
@@ -95,3 +113,16 @@ jobs:
       with:
         path: .coverage_history
         key: coverage-${{ github.run_id }}
+
+  # Step 3: Simulated Enterprise Deployment Gate Route
+  deploy:
+    needs: build-and-test
+    if: github.event_name == 'workflow_dispatch' # Runs only if triggered via the dropdown menu choice selection
+    runs-on: ubuntu-latest
+    steps:
+    - name: Execute Deployment Orchestration
+      run: |
+        echo "🚀 Initializing deployment workflow routing infrastructure..."
+        echo "🎯 Target Environment Selected: ${{ github.event.inputs.environment }}"
+        echo "📦 Packaging Spring Boot compiled artifact container image tier..."
+        echo "✅ Successfully deployed application context to environment cluster stack!"
