@@ -15,12 +15,13 @@ jobs:
       with:
         fetch-depth: 0 # Disables shallow clones so SonarQube can calculate precise line blame and tracking metrics
 
-    - name: Set up JDK 17
+     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '21'
         distribution: 'temurin'
         cache: maven
+
 
     # Step 1: Restore the previous build's coverage score if it exists
     - name: Restore Previous Coverage Score
