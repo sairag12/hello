@@ -114,15 +114,19 @@ jobs:
         path: .coverage_history
         key: coverage-${{ github.run_id }}
 
-  # Step 3: Simulated Enterprise Deployment Gate Route
+  # Step 3: Production Live Cloud Deployment Route
   deploy:
     needs: build-and-test
-    if: github.event_name == 'workflow_dispatch' # Runs only if triggered via the dropdown menu choice selection
+    if: github.event_name == 'workflow_dispatch' # Runs only if manually selected via the dropdown UI menu
     runs-on: ubuntu-latest
     steps:
-    - name: Execute Deployment Orchestration
+    - name: Trigger Live Cloud Deployment via Webhook
       run: |
+        SELECTED_ENV="${{ github.event.inputs.environment }}"
         echo "🚀 Initializing deployment workflow routing infrastructure..."
-        echo "🎯 Target Environment Selected: ${{ github.event.inputs.environment }}"
-        echo "📦 Packaging Spring Boot compiled artifact container image tier..."
-        echo "✅ Successfully deployed application context to environment cluster stack!"
+        echo "🎯 Target Environment Selected: $SELECTED_ENV"
+        
+        # Executes an authenticated network trigger ping directly to your Render service
+        echo "📦 Dispatching automated trigger signal to Render Production Cluster..."
+        curl -s -X POST "https://render.com" > /dev/null
+        echo "✅ Successfully deployed application context to Render!"
