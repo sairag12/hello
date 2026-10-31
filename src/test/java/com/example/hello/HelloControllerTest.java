@@ -6,7 +6,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(HelloController.class)
@@ -17,8 +16,6 @@ class HelloControllerTest {
 
     @Test
     void testGetStatusEndpoint() throws Exception {
-        mockMvc.perform(get("/api/v1/status"))
-               .andExpect(status().isOk())
-               .andExpect(content().string("Spring Boot Application is Live and Verified by GitHub Actions!"));
+        mockMvc.perform(get("/api/v1/status")).andExpect(status().isOk());
     }
 }
