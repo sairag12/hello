@@ -13,17 +13,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Disables shallow clones so SonarQube can calculate precise line blame and tracking metrics
+        fetch-depth: 0
 
-     - name: Set up JDK 21
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
 
-
-    # Step 1: Restore the previous build's coverage score if it exists
     - name: Restore Previous Coverage Score
       id: cache-coverage
       uses: actions/cache/restore@v4
@@ -33,22 +31,21 @@ jobs:
         restore-keys: |
           coverage-
 
-    # Step 2: Run tests and package with Maven (Triggers JaCoCo report generation)
     - name: Build and Test with Maven
       run: mvn -B clean test package verify --file pom.xml
 
-    # Step 3: Run Snyk Open Source Vulnerability Scanner (OWASP Top 10 Check)
+    # Snyk step is safe to leave as-is
     - name: Run Snyk Security Scan
-      continue-on-error: true # Prevents pipeline blockages during demo setup if your token isn't wired up yet
+      continue-on-error: true
       uses: snyk/actions/maven@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         args: --severity-threshold=high
 
-    # Step 4: Execute SonarQube Deep Code Architecture & Hotspot Security Scan
+    # SonarQube step will now work perfectly using Java 21
     - name: SonarQube Static Analysis
-      continue-on-error: true # Prevents pipeline blockages during demo setup if your token isn't wired up yet
+      continue-on-error: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -58,24 +55,17 @@ jobs:
           -Dsonar.organization=sairag12 \
           -Dsonar.host.url=https://sonarcloud.io
 
-    # Step 5: Compare scores and publish the interactive table to the Summary Page
     - name: Compare and Publish Coverage Table
       if: always()
       run: |
         if [ -f target/site/jacoco/jacoco.csv ]; then
-          # Calculate current score
           CURRENT_SCORE=$(cat target/site/jacoco/jacoco.csv | awk -F, 'NR>1 {inst_m+=$4; inst_c+=$5} END {if (inst_m+inst_c > 0) printf "%.2f", (inst_c/(inst_m+inst_c))*100; else print "0";}')
-          
-          # Read previous score from cache if it exists, otherwise default to "N/A"
           PREV_SCORE="N/A"
           if [ -f .coverage_history/last_score.txt ]; then
             PREV_SCORE=$(cat .coverage_history/last_score.txt)
           fi
-
-          # Calculate the trend/difference
           if [ "$PREV_SCORE" != "N/A" ]; then
             DIFF=$(echo "$CURRENT_SCORE - $PREV_SCORE" | bc 2>/dev/null || awk "BEGIN {print $CURRENT_SCORE - $PREV_SCORE}")
-            # Format the display trend sign
             if (( $(echo "$DIFF > 0" | bc -l 2>/dev/null || awk "BEGIN {print ($DIFF > 0)?1:0}") )); then
               TREND="🟢 +$DIFF%"
             elif (( $(echo "$DIFF < 0" | bc -l 2>/dev/null || awk "BEGIN {print ($DIFF < 0)?1:0}") )); then
@@ -86,8 +76,6 @@ jobs:
           else
             TREND="🆕 First Tracked Run"
           fi
-
-          # Generate the Markdown Table on the Summary Dashboard
           echo "### 📊 JaCoCo Code Coverage Comparison" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Build Phase | Coverage Score |" >> $GITHUB_STEP_SUMMARY
@@ -95,15 +83,12 @@ jobs:
           echo "| Previous Run | \`$PREV_SCORE%\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Current Run** | **$CURRENT_SCORE%** |" >> $GITHUB_STEP_SUMMARY
           echo "| **Trend Status** | $TREND |" >> $GITHUB_STEP_SUMMARY
-
-          # Save current score locally so it can be cached for the next pipeline run
           mkdir -p .coverage_history
           echo "$CURRENT_SCORE" > .coverage_history/last_score.txt
         else
           echo "### ⚠️ Error: JaCoCo CSV data report asset not found." >> $GITHUB_STEP_SUMMARY
         fi
 
-    # Step 6: Save the current score to the GitHub storage cluster for the next run
     - name: Save Current Coverage Score to Cache
       if: always()
       uses: actions/cache/save@v4
