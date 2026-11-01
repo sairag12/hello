@@ -49,8 +49,7 @@ jobs:
         echo "Executing verification flow against target profile: $TARGET_PROFILE"
         mvn -B clean test package verify -Dspring.profiles.active=$TARGET_PROFILE --file pom.xml
 
-    # SENIOR GATE: Removed continue-on-error so vulnerability failures block bad code from production
-     Sir, a senior pipeline must halt if security scans fail.
+    # Security scan step: Execution pauses if high vulnerabilities are uncovered
     - name: Run Snyk Security Scan
       uses: snyk/actions/maven@master
       env:
@@ -111,8 +110,7 @@ jobs:
 
   deploy:
     needs: build-and-test
-    # This block allows either a manual dropdown trigger OR a direct master branch push verification to deploy seamlessly
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'))
     runs-on: ubuntu-latest
     steps:
     - name: Trigger Live Cloud Deployment via Webhook
@@ -126,7 +124,6 @@ jobs:
         fi
         
         echo "📦 Dispatching authenticated, secured webhook signal straight to Render..."
-        # Senior Implementation: Using a secure POST to your exact service hook mapping
         RESPONSE=$(curl -s -w "%{http_code}" -X POST "$RENDER_HOOK")
         HTTP_CODE="${RESPONSE:${#RESPONSE}-3}"
         
