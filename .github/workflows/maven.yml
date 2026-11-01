@@ -49,13 +49,11 @@ jobs:
         echo "Executing verification flow against target profile: $TARGET_PROFILE"
         mvn -B clean test package verify -Dspring.profiles.active=$TARGET_PROFILE --file pom.xml
 
-    - name: Install Snyk CLI Natively
-      run: |
-        echo "Installing Snyk CLI onto the Ubuntu runner host..."
-        curl -sL https://snyk.io -o snyk
-        chmod +x snyk
-        sudo mv snyk /usr/local/bin/
+    # Step 1: Initialize official native binary wrapper securely onto the runner host OS
+    - name: Setup Snyk CLI Natively
+      uses: snyk/actions/setup@master
 
+    # Step 2: Authenticate and perform deep dependency compliance checks natively
     - name: Run Snyk Security Scan
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
