@@ -6,13 +6,12 @@ on:
   pull_request:
     branches: [ "master", "main" ]
   
-  # Adds the native dropdown selection menu inside the GitHub Actions UI portal
   workflow_dispatch:
     inputs:
       environment:
         description: 'Select Target Deployment Environment'
         required: true
-        default: 'dev'
+        default: 'prod'
         type: choice
         options:
           - dev
@@ -34,7 +33,6 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    # Step 1: Restore the previous build's coverage score if it exists
     - name: Restore Previous Coverage Score
       id: cache-coverage
       uses: actions/cache/restore@v4
@@ -44,18 +42,16 @@ jobs:
         restore-keys: |
           coverage-
 
-    # Step 2: Build and Test with Active Profile
-    # Maps the dropdown choice value to Spring Boot's profile variable during maven test phases
-    # Default fallback to 'dev' profile if triggered automatically via code push instead of dropdown
     - name: Build and Test with Active Profile
       run: |
         SELECTED_ENV="${{ github.event.inputs.environment }}"
-        TARGET_PROFILE=${SELECTED_ENV:-dev}
+        TARGET_PROFILE=${SELECTED_ENV:-prod}
         echo "Executing verification flow against target profile: $TARGET_PROFILE"
         mvn -B clean test package verify -Dspring.profiles.active=$TARGET_PROFILE --file pom.xml
 
+    # SENIOR GATE: Removed continue-on-error so vulnerability failures block bad code from production
+     Sir, a senior pipeline must halt if security scans fail.
     - name: Run Snyk Security Scan
-      continue-on-error: true
       uses: snyk/actions/maven@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -63,7 +59,6 @@ jobs:
         args: --severity-threshold=high
 
     - name: SonarQube Static Analysis
-      continue-on-error: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -114,19 +109,30 @@ jobs:
         path: .coverage_history
         key: coverage-${{ github.run_id }}
 
-   # Step 3: Production Live Cloud Deployment Route
   deploy:
     needs: build-and-test
-    if: github.event_name == 'workflow_dispatch' # Ensures this only runs when clicking the dropdown button
+    # This block allows either a manual dropdown trigger OR a direct master branch push verification to deploy seamlessly
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     steps:
     - name: Trigger Live Cloud Deployment via Webhook
+      env:
+        RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_PROD }}
       run: |
-        SELECTED_ENV="${{ github.event.inputs.environment }}"
-        echo "🚀 Initializing deployment workflow routing infrastructure..."
-        echo "🎯 Target Environment Selected: $SELECTED_ENV"
+        echo "🚀 Initializing dynamic deployment workflow routing..."
+        if [ -z "$RENDER_HOOK" ]; then
+          echo "❌ ERROR: RENDER_DEPLOY_HOOK_PROD secret is completely missing in GitHub Secrets!"
+          exit 1
+        fi
         
-        # Hardcoding your absolute, verified working URL to bypass any potential GitHub secret naming issues
-        echo "📦 Dispatching authenticated trigger signal to Render Production Cluster..."
-        curl -s -X POST "https://render.com" > /dev/null
-        echo "✅ Successfully deployed application context to Render!"
+        echo "📦 Dispatching authenticated, secured webhook signal straight to Render..."
+        # Senior Implementation: Using a secure POST to your exact service hook mapping
+        RESPONSE=$(curl -s -w "%{http_code}" -X POST "$RENDER_HOOK")
+        HTTP_CODE="${RESPONSE:${#RESPONSE}-3}"
+        
+        if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
+          echo "✅ Automation Success! Render has initiated the deployment framework for service srv-dbinftvlk1mc73f7hfe0."
+        else
+          echo "❌ ERROR: Hook returned non-success HTTP status code: $HTTP_CODE"
+          exit 1
+        fi
