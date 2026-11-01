@@ -49,13 +49,19 @@ jobs:
         echo "Executing verification flow against target profile: $TARGET_PROFILE"
         mvn -B clean test package verify -Dspring.profiles.active=$TARGET_PROFILE --file pom.xml
 
-    # Security scan step: Execution pauses if high vulnerabilities are uncovered
+    - name: Install Snyk CLI Natively
+      run: |
+        echo "Installing Snyk CLI onto the Ubuntu runner host..."
+        curl -sL https://snyk.io -o snyk
+        chmod +x snyk
+        sudo mv snyk /usr/local/bin/
+
     - name: Run Snyk Security Scan
-      uses: snyk/actions/maven@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --severity-threshold=high
+      run: |
+        echo "Executing Snyk scan utilizing native runner environment variables..."
+        snyk test --severity-threshold=high
 
     - name: SonarQube Static Analysis
       env:
