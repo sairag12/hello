@@ -15,7 +15,7 @@ public class HelloController {
     // Accessible at: ://onrender.com
     @GetMapping("/info")
     public String getHome() {
-        return "Hello World from Spring Boot and GitHub Actions Sairag! Running environment profile: " + currentEnv;
+        return "Hello World from Spring Boot and GitHub Actions Sairag reddy g! Running environment profile: " + currentEnv;
     }
 
     // Accessible at: ://onrender.com
