@@ -18,12 +18,47 @@
     
     <properties>
         <java.version>21</java.version>
-        
-        <!-- Senior Architecture Hardening: Overriding parent starters to patch specific CVEs -->
         <logback.version>1.5.36</logback.version>
-        <jackson.version>2.18.11</jackson.version>
-        <tomcat.version>10.1.43</tomcat.version>
     </properties>
+
+    <!-- Senior Architecture Implementation: Force transitive dependencies to secure versions -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Hardening Jackson Core & Databind layers -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.18.11</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.18.11</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.18.11</version>
+            </dependency>
+            
+            <!-- Hardening Embedded Tomcat Container layers -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>10.1.52</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>10.1.52</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>10.1.52</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
