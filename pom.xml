@@ -6,7 +6,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version>
+        <!-- Bumping parent to clean branch release to clear underlying Spring 6.1.x / Tomcat vulnerabilities -->
+        <version>3.3.11</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -18,13 +19,12 @@
     
     <properties>
         <java.version>21</java.version>
-        <logback.version>1.5.36</logback.version>
     </properties>
 
-    <!-- Senior Architecture Implementation: Force transitive dependencies to secure versions -->
+    <!-- Senior Architecture Enforcer: Hardening transitive dependencies beyond parent metadata defaults -->
     <dependencyManagement>
         <dependencies>
-            <!-- Hardening Jackson Core & Databind layers -->
+            <!-- Lock Jackson to modern patched release context -->
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
@@ -41,21 +41,21 @@
                 <version>2.18.11</version>
             </dependency>
             
-            <!-- Hardening Embedded Tomcat Container layers -->
+            <!-- Lock Embedded Tomcat container to secure baseline tracking -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
-                <version>10.1.52</version>
+                <version>10.1.60</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-el</artifactId>
-                <version>10.1.52</version>
+                <version>10.1.60</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-websocket</artifactId>
-                <version>10.1.52</version>
+                <version>10.1.60</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
