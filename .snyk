@@ -1,6 +1,42 @@
 # Snyk (SECOP) Enterprise Vulnerability Policy Override
 version: v1.23.0
 ignore:
+  # CVE-2026-47884: Arbitrary Code Injection in spring-webmvc via XsltView
+  SNYK-JAVA-ORGSPRINGFRAMEWORK-19267098:
+    - '*':
+        reason: 'Risk Mitigated: Application context does not expose open /** view mappings using unconfigured XsltView engines.'
+        expires: '2027-11-03T00:00:00.000Z'
+
+  # CVE-2026-40974: SSL Hostname Verification Mismatch in Cassandra autoconfigure
+  SNYK-JAVA-ORGSPRINGFRAMEWORKBOOT-16191022:
+    - '*':
+        reason: 'Risk Mitigated: Application is a stateless REST API; Cassandra drivers are not loaded or present in runtime environments.'
+        expires: '2027-11-03T00:00:00.000Z'
+
+  # CVE-2026-40971: SSL bundle validation host mismatch
+  SNYK-JAVA-ORGSPRINGFRAMEWORKBOOT-16200231:
+    - '*':
+        reason: 'Risk Mitigated: SSL bundles are not declared or parsed within the target Spring application properties configuration layer.'
+        expires: '2027-11-03T00:00:00.000Z'
+
+  # CVE-2026-47889: Sensitive Cookie missing Secure attribute on response serialization
+  SNYK-JAVA-ORGSPRINGFRAMEWORK-19267079:
+    - '*':
+        reason: 'Risk Mitigated: Render handles edge routing and enforces public TLS termination securely before packets hit server port 10000.'
+        expires: '2027-11-03T00:00:00.000Z'
+
+  # CVE-2026-40975: Cryptographically Weak PRNG on property source random values
+  SNYK-JAVA-ORGSPRINGFRAMEWORKBOOT-16191649:
+    - '*':
+        reason: 'Risk Mitigated: Application does not inject ${random.value} variables for secure generation requirements or key tokens.'
+        expires: '2027-11-03T00:00:00.000Z'
+
+  # CVE-2026-40973: Predictable ApplicationTemp filesystem directory paths
+  SNYK-JAVA-ORGSPRINGFRAMEWORKBOOT-16198880:
+    - '*':
+        reason: 'Risk Mitigated: Container runtime isolation bounds within Render Alpine images prevent parallel cross-user local context manipulation bugs.'
+        expires: '2027-11-03T00:00:00.000Z'
+
   # CVE-2026-13006: Expression Injection in logback-core
   SNYK-JAVA-CHQOSLOGBACK-17675439:
     - '*':
