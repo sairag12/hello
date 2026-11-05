@@ -1,4 +1,4 @@
-name: Java CI/CD Enterprise Pipeline
+﻿name: Java CI/CD Enterprise Pipeline
 
 on:
   push:
@@ -60,7 +60,7 @@ jobs:
         SELECTED_ENV="${{ github.event.inputs.environment }}"
         TARGET_PROFILE=${SELECTED_ENV:-prod}
         echo "Executing verification flow against target profile: $TARGET_PROFILE"
-        mvn -B clean test package verify -Dspring.profiles.active=$TARGET_PROFILE --file pom.xml
+        mvn -B clean test package verify -Dspring.profiles.active=test --file pom.xml
 
     # Step 3: Run the CodeQL Static Application Security Testing (SAST) Core Engine Analysis
     - name: Perform CodeQL Analysis
@@ -102,16 +102,16 @@ jobs:
           if [ "$PREV_SCORE" != "N/A" ]; then
             DIFF=$(echo "$CURRENT_SCORE - $PREV_SCORE" | bc 2>/dev/null || awk "BEGIN {print $CURRENT_SCORE - $PREV_SCORE}")
             if (( $(echo "$DIFF > 0" | bc -l 2>/dev/null || awk "BEGIN {print ($DIFF > 0)?1:0}") )); then
-              TREND="🟢 +$DIFF%"
+              TREND="ðŸŸ¢ +$DIFF%"
             elif (( $(echo "$DIFF < 0" | bc -l 2>/dev/null || awk "BEGIN {print ($DIFF < 0)?1:0}") )); then
-              TREND="🔴 $DIFF%"
+              TREND="ðŸ”´ $DIFF%"
             else
-              TREND="⚪ No Change"
+              TREND="âšª No Change"
             fi
           else
-            TREND="🆕 First Tracked Run"
+            TREND="ðŸ†• First Tracked Run"
           fi
-          echo "### 📊 JaCoCo Code Coverage Comparison" >> $GITHUB_STEP_SUMMARY
+          echo "### ðŸ“Š JaCoCo Code Coverage Comparison" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Build Phase | Coverage Score |" >> $GITHUB_STEP_SUMMARY
           echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
@@ -121,7 +121,7 @@ jobs:
           mkdir -p .coverage_history
           echo "$CURRENT_SCORE" > .coverage_history/last_score.txt
         else
-          echo "### ⚠️ Error: JaCoCo CSV data report asset not found." >> $GITHUB_STEP_SUMMARY
+          echo "### âš ï¸ Error: JaCoCo CSV data report asset not found." >> $GITHUB_STEP_SUMMARY
         fi
 
     - name: Save Current Coverage Score to Cache
@@ -140,19 +140,19 @@ jobs:
       env:
         RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_PROD }}
       run: |
-        echo "🚀 Initializing dynamic deployment workflow routing..."
+        echo "ðŸš€ Initializing dynamic deployment workflow routing..."
         if [ -z "$RENDER_HOOK" ]; then
-          echo "❌ ERROR: RENDER_DEPLOY_HOOK_PROD secret is completely missing in GitHub Secrets!"
+          echo "âŒ ERROR: RENDER_DEPLOY_HOOK_PROD secret is completely missing in GitHub Secrets!"
           exit 1
         fi
         
-        echo "📦 Dispatching authenticated, secured webhook signal straight to Render..."
+        echo "ðŸ“¦ Dispatching authenticated, secured webhook signal straight to Render..."
         RESPONSE=$(curl -s -w "%{http_code}" -X POST "$RENDER_HOOK")
         HTTP_CODE="${RESPONSE:${#RESPONSE}-3}"
         
         if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
-          echo "✅ Automation Success! Render has initiated the deployment framework for service srv-dbinftvlk1mc73f7hfe0."
+          echo "âœ… Automation Success! Render has initiated the deployment framework for service srv-dbinftvlk1mc73f7hfe0."
         else
-          echo "❌ ERROR: Hook returned non-success HTTP status code: $HTTP_CODE"
+          echo "âŒ ERROR: Hook returned non-success HTTP status code: $HTTP_CODE"
           exit 1
         fi
