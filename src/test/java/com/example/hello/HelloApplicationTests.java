@@ -2,13 +2,14 @@ package com.example.hello;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@TestPropertySource(properties = "app.environment=TESTING")
+@ActiveProfiles("test") // Tells Spring Boot to connect to the in-memory H2 test engine!
 class HelloApplicationTests {
 
-    @Test
-    void contextLoads() {
-    }
+	@Test
+	void contextLoads() {
+	}
+
 }
