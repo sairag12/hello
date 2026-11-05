@@ -100,9 +100,12 @@
                 <version>10.1.61</version>
             </dependency>
                 <!-- Self-contained Test Engine Layer -->
+        
+            <!-- Self-contained Test Engine Layer -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>2.3.232</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -143,9 +146,12 @@
             <scope>test</scope>
         </dependency>
             <!-- Self-contained Test Engine Layer -->
+        
+            <!-- Self-contained Test Engine Layer -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>2.3.232</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
