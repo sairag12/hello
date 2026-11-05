@@ -3,10 +3,11 @@
     xsi:schemaLocation="http://apache.org https://apache.org">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Hardening parent descriptor to shift baseline vulnerabilities -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.3</version>
+        <version>3.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -46,14 +47,13 @@
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>9.3.0</version>
             <scope>runtime</scope>
         </dependency>
 
         <!-- =================================================================== -->
         <!-- 🔒 DEVSECOPS SECURITY PATCH LAYER: GLOBAL CLASSPATH ENFORCEMENT       -->
         <!-- =================================================================== -->
-        <!-- Hardening Jackson Core Framework globally to patch deserialization flaws -->
+        <!-- Explicit alignment for dependencies pulling unpatched child trees -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
@@ -70,7 +70,6 @@
             <version>2.18.12</version>
         </dependency>
 
-        <!-- Hardening Tomcat Embedded Subsystems globally to patch authentication bypasses -->
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
@@ -87,23 +86,10 @@
             <version>10.1.61</version>
         </dependency>
 
-        <!-- Hardening Spring Data Commons Subsystems globally to patch DoS risks -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
             <version>3.5.12</version>
-        </dependency>
-
-        <!-- Hardening JAXB Core XML Processing Context globally -->
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-core</artifactId>
-            <version>4.0.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <version>4.0.6</version>
         </dependency>
 
         <!-- Self-contained Test Engine Layer -->
