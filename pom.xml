@@ -18,14 +18,8 @@
 
     <properties>
         <java.version>21</java.version>
-        
-        <!-- =================================================================== -->
-        <!-- 🔒 GLOBAL DEVSECOPS SECURITY VERSION OVERRIDES                      -->
-        <!-- =================================================================== -->
-        <!-- Force explicit modern release versions across all nested sub-starters -->
-        <tomcat.version>10.1.59</tomcat.version>
+        <tomcat.version>10.1.60</tomcat.version>
         <jackson.version>2.18.11</jackson.version>
-        <spring-data-bom.version>2024.1.3</spring-data-bom.version>
     </properties>
 
     <dependencies>
@@ -56,6 +50,62 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>9.3.0</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- =================================================================== -->
+        <!-- 🔒 DEVSECOPS SECURITY PATCH LAYER: GLOBAL CLASSPATH ENFORCEMENT       -->
+        <!-- =================================================================== -->
+        <!-- Hardening Jackson Core Framework globally -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.18.11</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.18.11</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.18.11</version>
+        </dependency>
+
+        <!-- Hardening Tomcat Embedded Subsystems globally -->
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>10.1.60</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-websocket</artifactId>
+            <version>10.1.60</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-el</artifactId>
+            <version>10.1.60</version>
+        </dependency>
+
+        <!-- Hardening Spring Data Commons Subsystems globally -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+            <version>3.4.3</version>
+        </dependency>
+
+        <!-- Hardening JAXB Core XML Processing Context globally -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>4.0.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>4.0.6</version>
         </dependency>
 
         <!-- Self-contained Test Engine Layer -->
