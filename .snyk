@@ -1,4 +1,4 @@
-﻿# Snyk ignore file to clear unpatched transitive Spring framework alerts
+﻿# Snyk ignore file to clear unpatched transitive framework alerts
 version: v1.22.0
 ignore:
   SNYK-JAVA-ORGSPRINGFRAMEWORK-19267072:
@@ -28,4 +28,8 @@ ignore:
   SNYK-JAVA-ORGSPRINGFRAMEWORK-19267098:
     - '*':
         reason: 'Requires upstream upgrade to Spring 7.0.9+. XsltView mappings are not utilized within this application.'
+        expires: 2027-01-01
+  SNYK-JAVA-ORGGLASSFISHJAXB-20883142:
+    - '*':
+        reason: 'Upstream vendor fix committed but not yet published. Application does not process untrusted XML payloads natively.'
         expires: 2027-01-01
